@@ -1,0 +1,82 @@
+policies:
+
+  # ── Security ──────────────────────────────────────────────────────────────
+
+  - name: azure-storage-no-public-access
+    description: "Azure storage accounts must not allow public blob access"
+    severity: error
+    resource_types: ["azurerm_storage_account"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: allow_blob_public_access
+      value: true
+
+  - name: azure-storage-https-only
+    description: "Azure storage accounts must enforce HTTPS traffic only"
+    severity: error
+    resource_types: ["azurerm_storage_account"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: enable_https_traffic_only
+      value: false
+
+  - name: azure-sql-no-public-access
+    description: "Azure SQL servers must not allow public network access"
+    severity: error
+    resource_types: ["azurerm_sql_server", "azurerm_mssql_server"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: public_network_access_enabled
+      value: true
+
+  - name: azure-vm-no-password-auth
+    description: "Azure VMs must use SSH key authentication, not passwords"
+    severity: error
+    resource_types: ["azurerm_linux_virtual_machine"]
+    on_actions: ["create"]
+    condition:
+      type: field_equals
+      field: disable_password_authentication
+      value: false
+
+  - name: azure-keyvault-soft-delete-required
+    description: "Azure Key Vaults must have soft delete enabled"
+    severity: error
+    resource_types: ["azurerm_key_vault"]
+    on_actions: ["create"]
+    condition:
+      type: field_equals
+      field: soft_delete_retention_days
+      value: 0
+
+  # ── Tagging ───────────────────────────────────────────────────────────────
+
+  - name: azure-tag-environment-required
+    description: "All resources must have an 'environment' tag"
+    severity: error
+    on_actions: ["create"]
+    condition:
+      type: field_missing
+      field: tags.environment
+
+  - name: azure-tag-owner-required
+    description: "All resources must have an 'owner' tag"
+    severity: warning
+    on_actions: ["create"]
+    condition:
+      type: field_missing
+      field: tags.owner
+
+  # ── Region ────────────────────────────────────────────────────────────────
+
+  - name: azure-region-europe-only
+    description: "Resources must be deployed in European regions only"
+    severity: error
+    on_actions: ["create"]
+    condition:
+      type: field_not_starts_with
+      field: location
+      prefix: "europe"

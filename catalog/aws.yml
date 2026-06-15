@@ -1,0 +1,111 @@
+policies:
+
+  # ── Security ──────────────────────────────────────────────────────────────
+
+  - name: aws-s3-no-public-acl
+    description: "S3 buckets must not have a public ACL"
+    severity: error
+    resource_types: ["aws_s3_bucket"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: acl
+      value: "public-read"
+
+  - name: aws-s3-no-public-acl-read-write
+    description: "S3 buckets must not have a public read-write ACL"
+    severity: error
+    resource_types: ["aws_s3_bucket"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: acl
+      value: "public-read-write"
+
+  - name: aws-s3-encryption-required
+    description: "S3 buckets must have server-side encryption enabled"
+    severity: error
+    resource_types: ["aws_s3_bucket"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_missing
+      field: server_side_encryption_configuration
+
+  - name: aws-rds-no-public-access
+    description: "RDS instances must not be publicly accessible"
+    severity: error
+    resource_types: ["aws_db_instance"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: publicly_accessible
+      value: true
+
+  - name: aws-rds-encryption-required
+    description: "RDS instances must have storage encryption enabled"
+    severity: error
+    resource_types: ["aws_db_instance"]
+    on_actions: ["create"]
+    condition:
+      type: field_equals
+      field: storage_encrypted
+      value: false
+
+  - name: aws-ec2-no-public-ip
+    description: "EC2 instances must not have a public IP automatically assigned"
+    severity: error
+    resource_types: ["aws_instance"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: associate_public_ip_address
+      value: true
+
+  # ── Tagging ───────────────────────────────────────────────────────────────
+
+  - name: aws-tag-environment-required
+    description: "All resources must have an 'environment' tag"
+    severity: error
+    on_actions: ["create"]
+    condition:
+      type: field_missing
+      field: tags.environment
+
+  - name: aws-tag-owner-required
+    description: "All resources must have an 'owner' tag"
+    severity: warning
+    on_actions: ["create"]
+    condition:
+      type: field_missing
+      field: tags.owner
+
+  - name: aws-tag-project-required
+    description: "All resources must have a 'project' tag"
+    severity: warning
+    on_actions: ["create"]
+    condition:
+      type: field_missing
+      field: tags.project
+
+  # ── Region ────────────────────────────────────────────────────────────────
+
+  - name: aws-region-eu-only
+    description: "Resources must be deployed in EU regions only"
+    severity: error
+    on_actions: ["create"]
+    condition:
+      type: field_not_starts_with
+      field: region
+      prefix: "eu-"
+
+  # ── Cost ──────────────────────────────────────────────────────────────────
+
+  - name: aws-rds-no-multi-az-in-non-prod
+    description: "RDS multi-AZ should only be enabled in production (warning)"
+    severity: warning
+    resource_types: ["aws_db_instance"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: multi_az
+      value: true

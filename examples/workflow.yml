@@ -1,0 +1,49 @@
+name: Terraform Governance
+
+on:
+  pull_request:
+    paths:
+      - '**.tf'
+      - '**.tfvars'
+
+jobs:
+  tf-gov:
+    name: Policy Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./infrastructure
+
+      - name: Terraform Plan
+        run: |
+          terraform plan -out=plan.bin
+          terraform show -json plan.bin > plan.json
+        working-directory: ./infrastructure
+
+      - name: Run tf-gov
+        id: tf-gov
+        uses: ximbor/tf-gov@v1
+        with:
+          plan-file: ./infrastructure/plan.json
+          policy-file: .tf-gov/policies.yml
+          # Optional: provide your own API key for human-friendly explanations
+          # llm-api-key: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Upload audit log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf-gov-audit-${{ github.run_id }}
+          path: .tf-gov/audit.log
+          retention-days: 90

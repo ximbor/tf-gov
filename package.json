@@ -1,0 +1,25 @@
+{
+  "name": "tf-gov",
+  "version": "0.1.0",
+  "description": "Terraform governance engine for small teams",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:action": "ncc build src/action.ts -o dist --source-map",
+    "test": "jest",
+    "dev": "ts-node src/index.ts"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.19.43",
+    "@vercel/ncc": "^0.38.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@octokit/rest": "^21.1.1",
+    "js-yaml": "^4.1.0"
+  }
+}

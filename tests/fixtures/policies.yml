@@ -1,0 +1,29 @@
+policies:
+  - name: no-public-s3
+    description: "S3 buckets must not have a public ACL"
+    severity: error
+    resource_types: ["aws_s3_bucket"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: acl
+      value: "public-read"
+
+  - name: eu-region-only
+    description: "Resources must be deployed in EU regions only"
+    severity: error
+    on_actions: ["create"]
+    condition:
+      type: field_not_starts_with
+      field: region
+      prefix: "eu-"
+
+  - name: no-public-db
+    description: "Databases must not be publicly accessible"
+    severity: error
+    resource_types: ["aws_db_instance"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: publicly_accessible
+      value: true

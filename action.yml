@@ -1,0 +1,27 @@
+name: 'tf-gov'
+description: 'Terraform governance engine — validates Terraform plans against policy rules before merge'
+author: 'ximbor'
+
+inputs:
+  plan-file:
+    description: 'Path to the Terraform plan JSON file (output of terraform show -json)'
+    required: true
+  policy-file:
+    description: 'Path to the policy YAML file'
+    required: true
+    default: '.tf-gov/policies.yml'
+  llm-api-key:
+    description: 'Optional OpenAI API key for human-friendly violation explanations'
+    required: false
+
+outputs:
+  passed:
+    description: 'true if all policy checks passed, false otherwise'
+  violations:
+    description: 'JSON array of policy violations found'
+  summary:
+    description: 'Human-readable summary of the policy check result'
+
+runs:
+  using: 'node20'
+  main: 'dist/action.js'

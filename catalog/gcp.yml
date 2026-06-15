@@ -1,0 +1,81 @@
+policies:
+
+  # ── Security ──────────────────────────────────────────────────────────────
+
+  - name: gcp-storage-no-public-access
+    description: "GCP storage buckets must not allow public access"
+    severity: error
+    resource_types: ["google_storage_bucket"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: public_access_prevention
+      value: "inherited"
+
+  - name: gcp-storage-uniform-access-required
+    description: "GCP storage buckets must have uniform bucket-level access enabled"
+    severity: error
+    resource_types: ["google_storage_bucket"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: uniform_bucket_level_access
+      value: false
+
+  - name: gcp-sql-no-public-ip
+    description: "GCP Cloud SQL instances must not have a public IP"
+    severity: error
+    resource_types: ["google_sql_database_instance"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: settings.ip_configuration.ipv4_enabled
+      value: true
+
+  - name: gcp-compute-no-public-ip
+    description: "GCP compute instances must not have an external IP"
+    severity: error
+    resource_types: ["google_compute_instance"]
+    on_actions: ["create", "update"]
+    condition:
+      type: field_equals
+      field: network_interface.access_config
+      value: []
+
+  - name: gcp-compute-shielded-vm-required
+    description: "GCP compute instances must have Shielded VM enabled"
+    severity: warning
+    resource_types: ["google_compute_instance"]
+    on_actions: ["create"]
+    condition:
+      type: field_missing
+      field: shielded_instance_config
+
+  # ── Tagging (labels in GCP) ───────────────────────────────────────────────
+
+  - name: gcp-label-environment-required
+    description: "All GCP resources must have an 'environment' label"
+    severity: error
+    on_actions: ["create"]
+    condition:
+      type: field_missing
+      field: labels.environment
+
+  - name: gcp-label-owner-required
+    description: "All GCP resources must have an 'owner' label"
+    severity: warning
+    on_actions: ["create"]
+    condition:
+      type: field_missing
+      field: labels.owner
+
+  # ── Region ────────────────────────────────────────────────────────────────
+
+  - name: gcp-region-europe-only
+    description: "Resources must be deployed in European regions only"
+    severity: error
+    on_actions: ["create"]
+    condition:
+      type: field_not_starts_with
+      field: region
+      prefix: "europe-"
