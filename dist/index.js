@@ -4121,7 +4121,7 @@ function info(message) {
 }
 // GitHub Actions passes inputs as environment variables: INPUT_<NAME>
 function getInput(name, required = false) {
-    const val = process.env[`INPUT_${name.toUpperCase().replace(/-/g, '_')}`] ?? '';
+    const val = process.env[`INPUT_${name.toUpperCase()}`] ?? '';
     if (required && !val) {
         setFailed(`Input "${name}" is required but was not provided.`);
     }
