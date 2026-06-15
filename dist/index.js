@@ -4109,11 +4109,13 @@ const prComment_1 = __nccwpck_require__(992);
 const auditLogger_1 = __nccwpck_require__(611);
 const violationExplainer_1 = __nccwpck_require__(762);
 // GitHub Actions communicates via environment files
+// Multi-line values require a heredoc delimiter to avoid format errors
 function setOutput(name, value) {
     const outputFile = process.env['GITHUB_OUTPUT'];
     if (outputFile) {
         const fs = __nccwpck_require__(896);
-        fs.appendFileSync(outputFile, `${name}=${value}\n`);
+        const delimiter = `EOF_${Date.now()}`;
+        fs.appendFileSync(outputFile, `${name}<<${delimiter}\n${value}\n${delimiter}\n`);
     }
 }
 function setFailed(message) {

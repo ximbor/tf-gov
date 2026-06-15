@@ -5,11 +5,13 @@ import { AuditLogger } from './audit/auditLogger';
 import { ViolationExplainer } from './llm/violationExplainer';
 
 // GitHub Actions communicates via environment files
+// Multi-line values require a heredoc delimiter to avoid format errors
 function setOutput(name: string, value: string): void {
   const outputFile = process.env['GITHUB_OUTPUT'];
   if (outputFile) {
     const fs = require('fs') as typeof import('fs');
-    fs.appendFileSync(outputFile, `${name}=${value}\n`);
+    const delimiter = `EOF_${Date.now()}`;
+    fs.appendFileSync(outputFile, `${name}<<${delimiter}\n${value}\n${delimiter}\n`);
   }
 }
 
