@@ -4128,6 +4128,12 @@ function getInput(name, required = false) {
     return val;
 }
 async function main() {
+    // Debug: log all INPUT_* env vars to verify GitHub Actions is injecting them
+    const inputVars = Object.entries(process.env)
+        .filter(([k]) => k.startsWith('INPUT_'))
+        .map(([k, v]) => `  ${k}=${v}`)
+        .join('\n');
+    info(`Input env vars:\n${inputVars || '  (none found)'}`);
     const planFile = path.resolve(getInput('plan-file', true));
     const policyFile = path.resolve(getInput('policy-file', true));
     info(`Running tf-gov`);
