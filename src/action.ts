@@ -4,9 +4,13 @@ import { PrCommenter } from './github/prComment';
 import { AuditLogger } from './audit/auditLogger';
 import { ViolationExplainer } from './llm/violationExplainer';
 
-// GitHub Actions communicates via stdout with specific commands
+// GitHub Actions communicates via environment files
 function setOutput(name: string, value: string): void {
-  process.stdout.write(`::set-output name=${name}::${value}\n`);
+  const outputFile = process.env['GITHUB_OUTPUT'];
+  if (outputFile) {
+    const fs = require('fs') as typeof import('fs');
+    fs.appendFileSync(outputFile, `${name}=${value}\n`);
+  }
 }
 
 function setFailed(message: string): void {
@@ -20,7 +24,7 @@ function info(message: string): void {
 
 // GitHub Actions passes inputs as environment variables: INPUT_<NAME>
 function getInput(name: string, required = false): string {
-  const val = process.env[`INPUT_${name.toUpperCase().replace(/-/g, '_')}`] ?? '';
+  const val = process.env[`INPUT_${name.toUpperCase()}`] ?? '';
   if (required && !val) {
     setFailed(`Input "${name}" is required but was not provided.`);
   }
@@ -28,7 +32,7 @@ function getInput(name: string, required = false): string {
 }
 
 async function main(): Promise<void> {
-  const planFile = path.resolve(getInput('plan-file', true));
+const planFile = path.resolve(getInput('plan-file', true));
   const policyFile = path.resolve(getInput('policy-file', true));
 
   info(`Running tf-gov`);

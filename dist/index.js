@@ -4108,9 +4108,13 @@ const index_1 = __nccwpck_require__(407);
 const prComment_1 = __nccwpck_require__(992);
 const auditLogger_1 = __nccwpck_require__(611);
 const violationExplainer_1 = __nccwpck_require__(762);
-// GitHub Actions communicates via stdout with specific commands
+// GitHub Actions communicates via environment files
 function setOutput(name, value) {
-    process.stdout.write(`::set-output name=${name}::${value}\n`);
+    const outputFile = process.env['GITHUB_OUTPUT'];
+    if (outputFile) {
+        const fs = __nccwpck_require__(896);
+        fs.appendFileSync(outputFile, `${name}=${value}\n`);
+    }
 }
 function setFailed(message) {
     process.stdout.write(`::error::${message}\n`);
@@ -4128,12 +4132,6 @@ function getInput(name, required = false) {
     return val;
 }
 async function main() {
-    // Debug: log all INPUT_* env vars to verify GitHub Actions is injecting them
-    const inputVars = Object.entries(process.env)
-        .filter(([k]) => k.startsWith('INPUT_'))
-        .map(([k, v]) => `  ${k}=${v}`)
-        .join('\n');
-    info(`Input env vars:\n${inputVars || '  (none found)'}`);
     const planFile = path.resolve(getInput('plan-file', true));
     const policyFile = path.resolve(getInput('policy-file', true));
     info(`Running tf-gov`);
