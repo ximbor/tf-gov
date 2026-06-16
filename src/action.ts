@@ -79,14 +79,19 @@ const planFile = path.resolve(getInput('plan-file', true));
 
     // Post comment on PR if running inside a GitHub Actions PR context
     const token = process.env['GITHUB_TOKEN'];
-    const repository = process.env['GITHUB_REPOSITORY']; // "owner/repo"
-    const prNumber = parseInt(process.env['GITHUB_REF']?.replace('refs/pull/', '').replace('/merge', '') ?? '0', 10);
+    const repository = process.env['GITHUB_REPOSITORY'];
+    const githubRef = process.env['GITHUB_REF'] ?? '';
+    const prNumber = parseInt(githubRef.replace('refs/pull/', '').replace('/merge', ''), 10);
+
+    info(`PR comment debug: token=${!!token} repository=${repository} ref=${githubRef} prNumber=${prNumber}`);
 
     if (token && repository && prNumber > 0) {
       const [owner, repo] = repository.split('/');
       const commenter = new PrCommenter({ token, owner, repo, prNumber });
       await commenter.upsertComment(policyResult, summary);
       info('PR comment posted.');
+    } else {
+      info('PR comment skipped: not in a PR context or missing token.');
     }
 
     if (!passed) {
