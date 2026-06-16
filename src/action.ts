@@ -83,15 +83,11 @@ const planFile = path.resolve(getInput('plan-file', true));
     const githubRef = process.env['GITHUB_REF'] ?? '';
     const prNumber = parseInt(githubRef.replace('refs/pull/', '').replace('/merge', ''), 10);
 
-    info(`PR comment debug: token=${!!token} repository=${repository} ref=${githubRef} prNumber=${prNumber}`);
-
     if (token && repository && prNumber > 0) {
       const [owner, repo] = repository.split('/');
       const commenter = new PrCommenter({ token, owner, repo, prNumber });
       await commenter.upsertComment(policyResult, summary);
       info('PR comment posted.');
-    } else {
-      info('PR comment skipped: not in a PR context or missing token.');
     }
 
     if (!passed) {
