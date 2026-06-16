@@ -22,6 +22,10 @@ outputs:
   summary:
     description: 'Human-readable summary of the policy check result'
 
+branding:
+  icon: 'shield'
+  color: 'blue'
+
 runs:
   using: 'node20'
   main: 'dist/index.js'
